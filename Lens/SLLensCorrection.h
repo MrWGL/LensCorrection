@@ -1,3 +1,6 @@
+#pragma once
+
+#include "sllenscorrection_global.h"
 #include "SLLensParam.h"
 #include <qpoint.h>
 #include <qrect.h>
@@ -74,16 +77,19 @@ public:
 	*/
 	void setLensLoad(bool);
 
-	
+
 	/**
 	*\biref
 	*对网格坐标值校正表进行线性插值
 	*x and y: 为需要校正的点
 	*ratio : 将x and y按比例缩放成-32768 ~ 32768 范围内的像素点
 	*reutrn 经过补偿后的point
+	*此算法速度较慢,使用重载函数linearInterpolation(QPointF p,double ratio);
 	*/
 	QPointF& linearInterpolation(double x,double y,double ratio);
 		
+	
+	QPointF& linearInterpolation(QPointF p, double ratio);
 
 private:
 	/**
@@ -108,7 +114,7 @@ private:
 	*/
 	double Calculate_Y_Direction(double dy1,double dy2,double dy3,double dy4,double y1,double y2,double x1,double x2,double x,double y);
 
-
+	void binarySearch(const QPointF &p,int &x,int &y);
 private:
 
 	SLLens_COR_POINT m_Cor_Point[MAX_GRID_SIZE][MAX_GRID_SIZE];  //坐标值校正表
