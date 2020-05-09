@@ -198,7 +198,7 @@ bool SLLensCorrection::readFile(QString fileName)
 		return false;
 	}
 
-	if (file.open(QIODevice::ReadOnly | QIODevice::Truncate))
+    if (file.open(QIODevice::ReadOnly))
 	{
 		for (int ix = 0; ix < MAX_GRID_SIZE; ix++)
 		{
@@ -234,12 +234,17 @@ void SLLensCorrection::setLensLoad(bool b)
 
 
 QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
-{
+{	
+
 	x *= ratio;
 	y *= ratio;
 
 	pStart.setX(x);
 	pStart.setY(y);
+	if (x == 30000 && y == (-29670))
+	{
+		int a = 0;
+	}
 
 
 	//缩小查找范围,更快找到 point 所在区域,优化整个图形校正所需时间
@@ -251,12 +256,12 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 		//将网格划分区域，减少x轴搜索范围 (x > 0 && x < 32768 / 4)
 		if (pStart.x() > 0 && pStart.x() < m_Cor_Point[(MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 8)][0].fx)
 		{
-			for (int iX = MAX_GRID_SIZE / 2 + 1; iX < MAX_GRID_SIZE / 2 + MAX_GRID_SIZE / 4; iX++)    //缩小搜索范围
+            for (int iX = MAX_GRID_SIZE / 2 + 1; iX < 48; iX++)    //缩小搜索范围
 			{
 				//缩小 y 轴搜索范围 y < 0 && y > -(32768 / 2)
-				if (pStart.y() < 0 && pStart.y() > m_Cor_Point[iX][(MAX_GRID_SIZE / 2)].fy)
+                if (pStart.y() < 0 && pStart.y() > m_Cor_Point[iX][(MAX_GRID_SIZE / 4)].fy)
 				{
-					for (int iY = (MAX_GRID_SIZE / 4) + 1; iY < MAX_GRID_SIZE / 2; iY++)   //缩小搜索范围
+                    for (int iY = 16 + 1; iY < MAX_GRID_SIZE / 2; iY++)   //缩小搜索范围
 					{
 						if (pStart.x() >= m_Cor_Point[iX - 1][iY].fx && pStart.y() <= m_Cor_Point[iX][iY].fy
 							&& pStart.x() < m_Cor_Point[iX][iY].fx && pStart.y() > m_Cor_Point[iX][iY - 1].fy)
@@ -283,7 +288,7 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 				//缩小 y 轴搜索范围, y < -(32768/2) && y > -32768
 				else if (pStart.y() < m_Cor_Point[iX][MAX_GRID_SIZE / 4].fy && pStart.y() > m_Cor_Point[iX][0].fy)
 				{
-					for (int iY = 1; iY < MAX_GRID_SIZE / 4; iY++)
+                    for (int iY = 1; iY < MAX_GRID_SIZE / 2; iY++)
 					{
 						if (pStart.x() >= m_Cor_Point[iX - 1][iY].fx && pStart.y() <= m_Cor_Point[iX][iY].fy
 							&& pStart.x() < m_Cor_Point[iX][iY].fx && pStart.y() > m_Cor_Point[iX][iY - 1].fy)
@@ -311,14 +316,14 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 		}
 
 		//x > 32768 / 4 && x < 32768 / 2
-		else if (pStart.x() > m_Cor_Point[MAX_GRID_SIZE / 2 + MAX_GRID_SIZE / 8]->fx && pStart.x() < m_Cor_Point[MAX_GRID_SIZE / 2 + MAX_GRID_SIZE / 4]->fx)
+        else if (pStart.x() > m_Cor_Point[MAX_GRID_SIZE / 2 + MAX_GRID_SIZE / 8 ]->fx && pStart.x() < m_Cor_Point[MAX_GRID_SIZE -  MAX_GRID_SIZE / 4]->fx)
 		{
-			for (int iX = (MAX_GRID_SIZE / 2 + MAX_GRID_SIZE / 8) + 1; iX < MAX_GRID_SIZE; iX++)
+            for (int iX = (MAX_GRID_SIZE / 2 + MAX_GRID_SIZE / 8) + 1; iX < MAX_GRID_SIZE; iX++)
 			{
 				// y < 0 && y > -(32768 / 2)
-				if (pStart.y() < 0 && pStart.y() > m_Cor_Point[iX][MAX_GRID_SIZE / 2].fy)
+                if (pStart.y() < 0 && pStart.y() > m_Cor_Point[iX][MAX_GRID_SIZE / 4].fy)
 				{
-					for (int iY = MAX_GRID_SIZE / 4 + 1; iY < MAX_GRID_SIZE; iY++)
+                    for (int iY = 16 + 1; iY < MAX_GRID_SIZE; iY++)
 					{
 						if (pStart.x() >= m_Cor_Point[iX - 1][iY].fx && pStart.y() <= m_Cor_Point[iX][iY].fy
 							&& pStart.x() < m_Cor_Point[iX][iY].fx && pStart.y() > m_Cor_Point[iX][iY - 1].fy)
@@ -342,28 +347,28 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 					}
 				}
 
-				else if (pStart.y() < m_Cor_Point[iX][MAX_GRID_SIZE / 4].fy && pStart.y() > m_Cor_Point[iX][0].fy)
+                else if (pStart.y() < m_Cor_Point[iX][MAX_GRID_SIZE / 4].fy && pStart.y() > m_Cor_Point[iX][0].fy)
 				{
-					for (int iY = 1; iY < MAX_GRID_SIZE; iY++)
+                    for (int iY = 1; iY < MAX_GRID_SIZE / 2; iY++)
 					{
 						if (pStart.x() >= m_Cor_Point[iX - 1][iY].fx && pStart.y() <= m_Cor_Point[iX][iY].fy
 							&& pStart.x() < m_Cor_Point[iX][iY].fx && pStart.y() > m_Cor_Point[iX][iY - 1].fy)
 						{
 							//double dGap = 1024.00;
 
-							//计算 x point 补偿量
-							double xInterpolation = Calculate_X_Direction(m_Cor_Point[iX - 1][iY].fx, m_Cor_Point[iX][iY].fx,
-								m_Cor_Point[iX - 1][iY].fx, m_Cor_Point[iX][iY].fx, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY].fx, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, pStart.x(), pStart.y());
+                            //计算 x point 补偿量,以左下角顶点为基准，减去相对应值，得到四个顶点值
+                            double xInterpolation = Calculate_X_Direction(m_Cor_Point[iX - 1][iY].fx, m_Cor_Point[iX][iY].fx, m_Cor_Point[iX - 1][iY - 1].fx, m_Cor_Point[iX][iY - 1].fx, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, pStart.x(), pStart.y());
 
-							//计算 y point 补偿量
-							double yInterpolation = Calculate_Y_Direction(m_Cor_Point[iX - 1][iY].fy, m_Cor_Point[iX][iY].fy, m_Cor_Point[iX - 1][iY - 1].fy, m_Cor_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, pStart.x(), pStart.y());
-							double x, y;
-							x = pStart.x() / ratio + xInterpolation;
-							y = pStart.y() / ratio + yInterpolation;
+                            //计算 y point 补偿量
+                            double yInterpolation = Calculate_Y_Direction(m_Cor_Point[iX - 1][iY].fy, m_Cor_Point[iX][iY].fy, m_Cor_Point[iX - 1][iY - 1].fy, m_Cor_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, pStart.x(), pStart.y());
 
-							pStart.setX(x);
-							pStart.setY(y);
-							return pStart;
+                            double x, y;
+                            x = pStart.x() / ratio + xInterpolation;
+                            y = pStart.y() / ratio + yInterpolation;
+
+                            pStart.setX(x);
+                            pStart.setY(y);
+                            return pStart;
 						}
 					}
 				}
@@ -371,15 +376,15 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 		}
 
 		// 缩小 x 轴搜索范围, x > (32768 / 2) && x < (32768 / 2 + 32768 / 4)
-		else if (pStart.x() > m_Cor_Point[(MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 4)]->fx &&
-			pStart.x() < m_Cor_Point[MAX_GRID_SIZE - 1][0].fx)
+		else if (pStart.x() > m_Cor_Point[(MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 4)]->fx &&pStart.x() < m_Cor_Point[MAX_GRID_SIZE - MAX_GRID_SIZE / 8][0].fx)
+
 		{
-			for (int iX = (MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 4) + 1; iX < MAX_GRID_SIZE; iX++)
+			for (int iX = (MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 8) + 1; iX < MAX_GRID_SIZE; iX++)
 			{
 				//缩小Y轴搜索范围, y < 0 && y > -(32768 / 2)
-				if (pStart.y() < 0 && pStart.y() > m_Cor_Point[iX][(MAX_GRID_SIZE / 4)].fy)
+				if (pStart.y() < 0 && pStart.y() > m_Cor_Point[iX][(MAX_GRID_SIZE / 4 )].fy)
 				{
-					for (int iY = MAX_GRID_SIZE / 4 + 1; iY < MAX_GRID_SIZE / 2; iY++)
+                    for (int iY = 16 + 1; iY < MAX_GRID_SIZE / 2; iY++)
 					{
 
 						if (pStart.x() >= m_Cor_Point[iX - 1][iY].fx && pStart.y() <= m_Cor_Point[iX][iY].fy
@@ -404,9 +409,9 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 					}
 				}
 				//缩小Y轴搜索范围, y < -(32768 / 2) && y > -32768
-				else if (pStart.y() < m_Cor_Point[iX][MAX_GRID_SIZE / 4].fy && pStart.y() > m_Cor_Point[iX][0].fy)
+				else if (pStart.y() < m_Cor_Point[iX][MAX_GRID_SIZE / 4 + 1].fy && pStart.y() > m_Cor_Point[iX][0].fy)
 				{
-					for (int iY = 1; iY < MAX_GRID_SIZE / 4; iY++)
+					for (int iY = 1; iY < MAX_GRID_SIZE / 2; iY++)
 					{
 
 						if (pStart.x() >= m_Cor_Point[iX - 1][iY].fx && pStart.y() <= m_Cor_Point[iX][iY].fy
@@ -414,30 +419,31 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 						{
 							//double dGap = 1024.00;
 
-							//计算 x point 补偿量
-							double xInterpolation = Calculate_X_Direction(m_Cor_Point[iX - 1][iY].fx, m_Cor_Point[iX][iY].fx,
-								m_Cor_Point[iX - 1][iY].fx, m_Cor_Point[iX][iY].fx, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY].fx, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, pStart.x(), pStart.y());
+                            //计算 x point 补偿量,以左下角顶点为基准，减去相对应值，得到四个顶点值
+                            double xInterpolation = Calculate_X_Direction(m_Cor_Point[iX - 1][iY].fx, m_Cor_Point[iX][iY].fx, m_Cor_Point[iX - 1][iY - 1].fx, m_Cor_Point[iX][iY - 1].fx, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, pStart.x(), pStart.y());
 
-							//计算 y point 补偿量
-							double yInterpolation = Calculate_Y_Direction(m_Cor_Point[iX - 1][iY].fy, m_Cor_Point[iX][iY].fy, m_Cor_Point[iX - 1][iY - 1].fy, m_Cor_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, pStart.x(), pStart.y());
-							x = pStart.x() / ratio + xInterpolation;
-							y = pStart.y() / ratio + yInterpolation;
+                            //计算 y point 补偿量
+                            double yInterpolation = Calculate_Y_Direction(m_Cor_Point[iX - 1][iY].fy, m_Cor_Point[iX][iY].fy, m_Cor_Point[iX - 1][iY - 1].fy, m_Cor_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, pStart.x(), pStart.y());
 
-							pStart.setX(x);
-							pStart.setY(y);
-							return pStart;
+                            double x, y;
+                            x = pStart.x() / ratio + xInterpolation;
+                            y = pStart.y() / ratio + yInterpolation;
+
+                            pStart.setX(x);
+                            pStart.setY(y);
+                            return pStart;
 						}
 					}
 				}
 			}
 		}
-		else if (pStart.x() > m_Cor_Point[MAX_GRID_SIZE - MAX_GRID_SIZE / 8]->fx && pStart.x() < m_Cor_Point[MAX_GRID_SIZE - 1]->fx)
+        else if (pStart.x() > m_Cor_Point[MAX_GRID_SIZE -  MAX_GRID_SIZE / 4]->fx && pStart.x() < m_Cor_Point[MAX_GRID_SIZE - 1]->fx)
 		{
-			for (int iX = (MAX_GRID_SIZE - MAX_GRID_SIZE / 8 + 1); iX < MAX_GRID_SIZE; iX++)
+            for (int iX = MAX_GRID_SIZE - MAX_GRID_SIZE / 4 + 1; iX < MAX_GRID_SIZE; iX++)
 			{
-				if (pStart.y() < 0 && pStart.y() > m_Cor_Point[iX][MAX_GRID_SIZE / 4].fy)
+				if (pStart.y() < 0 && pStart.y() > m_Cor_Point[iX][16].fy)
 				{
-					for (int iY = MAX_GRID_SIZE / 4 + 1; iY < MAX_GRID_SIZE / 2; iY++)
+                    for (int iY = 16 + 1; iY < MAX_GRID_SIZE / 2; iY++)
 					{
 
 						if (pStart.x() >= m_Cor_Point[iX - 1][iY].fx && pStart.y() <= m_Cor_Point[iX][iY].fy
@@ -462,29 +468,30 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 					}
 				}
 				//缩小Y轴搜索范围, y < -(32768 / 2) && y > -32768
-				else if (pStart.y() < m_Cor_Point[iX][MAX_GRID_SIZE / 4].fy && pStart.y() > m_Cor_Point[iX][0].fy)
+				else if (pStart.y() < m_Cor_Point[iX][16 + 1].fy && pStart.y() > m_Cor_Point[iX][0].fy)
 				{
-					for (int iY = 1; iY < MAX_GRID_SIZE / 4; iY++)
+					for (int iY = 1; iY < MAX_GRID_SIZE / 2; iY++)
 					{
 
-						if (pStart.x() >= m_Cor_Point[iX - 1][iY].fx && pStart.y() <= m_Cor_Point[iX][iY].fy
-							&& pStart.x() < m_Cor_Point[iX][iY].fx && pStart.y() > m_Cor_Point[iX][iY - 1].fy)
+						if (pStart.x() > m_Cor_Point[iX - 1][iY].fx && pStart.y() < m_Cor_Point[iX][iY].fy
+							&& pStart.x() < m_Cor_Point[iX][iY].fx  && pStart.y() > m_Cor_Point[iX][iY - 1].fy)
 						{
+							//每个网格的大小为1024
 							//double dGap = 1024.00;
 
-							//计算 x point 补偿量
-							double xInterpolation = Calculate_X_Direction(m_Cor_Point[iX - 1][iY].fx, m_Cor_Point[iX][iY].fx,
-								m_Cor_Point[iX - 1][iY].fx, m_Cor_Point[iX][iY].fx, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY].fx, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, pStart.x(), pStart.y());
+                            //计算 x point 补偿量,以左下角顶点为基准，减去相对应值，得到四个顶点值
+                            double xInterpolation = Calculate_X_Direction(m_Cor_Point[iX - 1][iY].fx, m_Cor_Point[iX][iY].fx, m_Cor_Point[iX - 1][iY - 1].fx, m_Cor_Point[iX][iY - 1].fx, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, pStart.x(), pStart.y());
 
-							//计算 y point 补偿量
-							double yInterpolation = Calculate_Y_Direction(m_Cor_Point[iX - 1][iY].fy, m_Cor_Point[iX][iY].fy, m_Cor_Point[iX - 1][iY - 1].fy, m_Cor_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, pStart.x(), pStart.y());
-							double x, y;
-							x = pStart.x() / ratio + xInterpolation;
-							y = pStart.y() / ratio + yInterpolation;
+                            //计算 y point 补偿量
+                            double yInterpolation = Calculate_Y_Direction(m_Cor_Point[iX - 1][iY].fy, m_Cor_Point[iX][iY].fy, m_Cor_Point[iX - 1][iY - 1].fy, m_Cor_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, pStart.x(), pStart.y());
 
-							pStart.setX(x);
-							pStart.setY(y);
-							return pStart;
+                            double x, y;
+                            x = pStart.x() / ratio + xInterpolation;
+                            y = pStart.y() / ratio + yInterpolation;
+
+                            pStart.setX(x);
+                            pStart.setY(y);
+                            return pStart;
 						}
 					}
 				}
@@ -507,7 +514,7 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 				//缩小Y轴搜索范围, y > 0 && y < (32768 / 2)
 				if (pStart.y() > 0 && pStart.y() < m_Cor_Point[iX][(MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 4)].fy)
 				{
-					for (int iY = MAX_GRID_SIZE / 2 + 1; iY < ((MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 4)); iY++)
+					for (int iY = MAX_GRID_SIZE / 2 + 1; iY < MAX_GRID_SIZE ; iY++)
 					{
 						if (pStart.x() >= m_Cor_Point[iX - 1][iY].fx && pStart.y() <= m_Cor_Point[iX][iY].fy &&
 							pStart.x() < m_Cor_Point[iX][iY].fx  && pStart.y() > m_Cor_Point[iX][iY - 1].fy)
@@ -569,7 +576,7 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 				//缩小Y轴搜索范围, y > 0 && y < (32768 / 2)
 				if (pStart.y() > 0 && pStart.y() < m_Cor_Point[iX][(MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 4)].fy)
 				{
-					for (int iY = MAX_GRID_SIZE / 2 + 1; iY < (MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 4); iY++)
+					for (int iY = MAX_GRID_SIZE / 2 + 1; iY < MAX_GRID_SIZE; iY++)
 					{
 
 						if (pStart.x() >= m_Cor_Point[iX - 1][iY].fx && pStart.y() <= m_Cor_Point[iX][iY].fy &&
@@ -583,15 +590,9 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 
 							//计算 y point 补偿量
 							double yInterpolation = Calculate_Y_Direction(m_Cor_Point[iX - 1][iY - 1].fy, m_Cor_Point[iX - 1][iY - 1].fy, m_Cor_Point[iX][iY].fy, m_Cor_Point[iX][iY].fy, srcPoint.m_Src_Point[iX - 1][iY - 1].fy, srcPoint.m_Src_Point[iX][iY].fy, srcPoint.m_Src_Point[iX - 1][iY - 1].fx, srcPoint.m_Src_Point[iX][iY].fx, pStart.x(), pStart.y());
-							double x, y;
-							if (xInterpolation < 0)
-								x = pStart.x() / ratio - xInterpolation;
-							else
-								x = pStart.x() / ratio + xInterpolation;
-							if (yInterpolation < 0)
-								y = pStart.y() / ratio + yInterpolation;
-							else
-								y = pStart.y() / ratio - yInterpolation;
+                            double x, y;
+                            x = pStart.x() / ratio + xInterpolation;
+                            y = pStart.y() / ratio + yInterpolation;
 
 							pStart.setX(x);
 							pStart.setY(y);
@@ -617,15 +618,9 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 
 							//计算 y point 补偿量
 							double yInterpolation = Calculate_Y_Direction(m_Cor_Point[iX - 1][iY - 1].fy, m_Cor_Point[iX - 1][iY - 1].fy, m_Cor_Point[iX][iY].fy, m_Cor_Point[iX][iY].fy, srcPoint.m_Src_Point[iX - 1][iY - 1].fy, srcPoint.m_Src_Point[iX][iY].fy, srcPoint.m_Src_Point[iX - 1][iY - 1].fx, srcPoint.m_Src_Point[iX][iY].fx, pStart.x(), pStart.y());
-							double x, y;
-							if (xInterpolation < 0)
-								x = pStart.x() / ratio - xInterpolation;
-							else
-								x = pStart.x() / ratio + xInterpolation;
-							if (yInterpolation < 0)
-								y = pStart.y() / ratio + yInterpolation;
-							else
-								y = pStart.y() / ratio - yInterpolation;
+                            double x, y;
+                            x = pStart.x() / ratio + xInterpolation;
+                            y = pStart.y() / ratio + yInterpolation;
 
 							pStart.setX(x);
 							pStart.setY(y);
@@ -637,14 +632,14 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 		}
 
 		//缩小X轴搜索范围,x > (32768 / 2) && x < (32768 / 2 + 32768 / 4)
-		else if (pStart.x() > m_Cor_Point[(MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 4)][0].fx && pStart.x() < m_Cor_Point[MAX_GRID_SIZE - MAX_GRID_SIZE / 8][0].fx)
+        else if (pStart.x() > m_Cor_Point[(MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 4)]->fx && pStart.x() < m_Cor_Point[MAX_GRID_SIZE - MAX_GRID_SIZE / 8][0].fx)
 		{
-			for (int iX = (MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 4) + 1; iX < MAX_GRID_SIZE; iX++)
+			for (int iX = (MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 8) + 1; iX < MAX_GRID_SIZE; iX++)
 			{
 				//缩小Y轴搜索范围, y > 0 && y < (32768 / 2)
 				if (pStart.y() > 0 && pStart.y() < m_Cor_Point[iX][(MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 4)].fy)
 				{
-					for (int iY = MAX_GRID_SIZE / 2 + 1; iY < (MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 4); iY++)
+					for (int iY = MAX_GRID_SIZE / 2 + 1; iY < MAX_GRID_SIZE ; iY++)
 					{
 
 						if (pStart.x() >= m_Cor_Point[iX - 1][iY].fx && pStart.y() <= m_Cor_Point[iX][iY].fy &&
@@ -672,7 +667,7 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 				else if (pStart.y() > m_Cor_Point[iX][(MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 4)].fy &&
 					pStart.y() < m_Cor_Point[iX][MAX_GRID_SIZE - 1].fy);
 				{
-					for (int iY = (MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 4) + 1; iY < MAX_GRID_SIZE; iY++)
+                    for (int iY = (MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 4) + 1; iY < MAX_GRID_SIZE; iY++)
 					{
 
 						if (pStart.x() >= m_Cor_Point[iX - 1][iY].fx && pStart.y() <= m_Cor_Point[iX][iY].fy &&
@@ -700,14 +695,14 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 		}
 
 		//x > (32768 - 32768 / 4) && x < 32768
-		else if (pStart.x() > m_Cor_Point[MAX_GRID_SIZE - MAX_GRID_SIZE / 8]->fx && pStart.x() < m_Cor_Point[MAX_GRID_SIZE - 1]->fx)
+		else if (pStart.x() > m_Cor_Point[MAX_GRID_SIZE - MAX_GRID_SIZE / 4]->fx && pStart.x() < m_Cor_Point[MAX_GRID_SIZE - 1]->fx)
 		{
-			for (int iX = MAX_GRID_SIZE - MAX_GRID_SIZE / 8 + 1; iX < MAX_GRID_SIZE; iX++)
+			for (int iX = MAX_GRID_SIZE - MAX_GRID_SIZE / 4 + 1; iX < MAX_GRID_SIZE; iX++)
 			{
 				//缩小Y轴搜索范围, y > 0 && y < (32768 / 2)
 				if (pStart.y() > 0 && pStart.y() < m_Cor_Point[iX][(MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 4)].fy)
 				{
-					for (int iY = MAX_GRID_SIZE / 2 + 1; iY < (MAX_GRID_SIZE / 2) + (MAX_GRID_SIZE / 4); iY++)
+					for (int iY = MAX_GRID_SIZE / 2 + 1; iY < MAX_GRID_SIZE; iY++)
 					{
 
 						if (pStart.x() >= m_Cor_Point[iX - 1][iY].fx && pStart.y() <= m_Cor_Point[iX][iY].fy &&
@@ -832,6 +827,7 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 			}
 		}
 
+
 		//x < -(32768 / 4) && x > -(32768 / 2)
 		else if (pStart.x() < m_Cor_Point[MAX_GRID_SIZE / 2 + MAX_GRID_SIZE / 8]->fx && pStart.x() > m_Cor_Point[MAX_GRID_SIZE / 4]->fx)
 		{
@@ -926,6 +922,7 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 						}
 					}
 				}
+
 				else if (pStart.y() > m_Cor_Point[iX][MAX_GRID_SIZE / 2 + MAX_GRID_SIZE / 4].fy && pStart.y() < m_Cor_Point[iX][MAX_GRID_SIZE - 1].fy)
 				{
 					for (int iY = (MAX_GRID_SIZE / 2 + MAX_GRID_SIZE / 4) + 1; iY < MAX_GRID_SIZE; iY++)
@@ -936,29 +933,31 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 							//每个网格的大小为1024
 							//double dGap = 1024.00;
 
-							//计算 x point 补偿量,以左下角顶点为基准，减去相对应值，得到四个顶点值
-							double xInterpolation = Calculate_X_Direction(m_Cor_Point[iX - 1][iY].fx, m_Cor_Point[iX][iY].fx,
-								m_Cor_Point[iX - 1][iY].fx, m_Cor_Point[iX][iY - 1].fx, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, pStart.x(), pStart.y());
+                            //计算 x point 补偿量,以左下角顶点为基准，减去相对应值，得到四个顶点值
+                            double xInterpolation = Calculate_X_Direction(m_Cor_Point[iX - 1][iY].fx, m_Cor_Point[iX][iY].fx, m_Cor_Point[iX - 1][iY - 1].fx, m_Cor_Point[iX][iY - 1].fx, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, pStart.x(), pStart.y());
 
-							//计算 y point 补偿量
-							double yInterpolation = Calculate_Y_Direction(m_Cor_Point[iX - 1][iY].fy, m_Cor_Point[iX][iY].fy, m_Cor_Point[iX - 1][iY - 1].fy, m_Cor_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, pStart.x(), pStart.y());
-							double x, y;
-							x = pStart.x() / ratio + xInterpolation;
-							y = pStart.y() / ratio + yInterpolation;
-							
-							pStart.setX(x);
-							pStart.setY(y);
-							return pStart;
+                            //计算 y point 补偿量
+                            double yInterpolation = Calculate_Y_Direction(m_Cor_Point[iX - 1][iY].fy, m_Cor_Point[iX][iY].fy, m_Cor_Point[iX - 1][iY - 1].fy, m_Cor_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, pStart.x(), pStart.y());
+
+                            double x, y;
+                            x = pStart.x() / ratio + xInterpolation;
+                            y = pStart.y() / ratio + yInterpolation;
+
+                            pStart.setX(x);
+                            pStart.setY(y);
+                            return pStart;
 						}
 					}
 				}
 			}
 		}
 
+
+
 		//x < -(32768 - 32768 / 4) && x > -(32768)
-		else if (pStart.x() < m_Cor_Point[MAX_GRID_SIZE / 8]->fx && pStart.x() > m_Cor_Point[0]->fx)
+		else if (pStart.x() < m_Cor_Point[MAX_GRID_SIZE / 4]->fx && pStart.x() > m_Cor_Point[0]->fx)
 		{
-			for (int iX = 1; iX < MAX_GRID_SIZE; iX++)
+            for (int iX = 1; iX < MAX_GRID_SIZE; iX++)
 			{
 				//缩小Y轴搜索范围,y > 0 && y < (32768 / 2)
 				if (pStart.y() > 0 && pStart.y() < m_Cor_Point[iX][MAX_GRID_SIZE / 2 + MAX_GRID_SIZE / 4].fy)
@@ -987,9 +986,11 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 						}
 					}
 				}
+
+
 				else if (pStart.y() > m_Cor_Point[iX][MAX_GRID_SIZE / 2 + MAX_GRID_SIZE / 4].fy && pStart.y() < m_Cor_Point[iX][MAX_GRID_SIZE - 1].fy)
 				{
-					for (int iY = (MAX_GRID_SIZE / 2 + MAX_GRID_SIZE / 4) + 1; iY < MAX_GRID_SIZE; iY++)
+					for (int iY = (MAX_GRID_SIZE / 2 ) + 1; iY < MAX_GRID_SIZE; iY++)
 					{
 						if (pStart.x() >= m_Cor_Point[iX - 1][iY].fx && pStart.y() <= m_Cor_Point[iX][iY].fy &&
 							pStart.x() < m_Cor_Point[iX][iY].fx  && pStart.y() > m_Cor_Point[iX][iY - 1].fy)
@@ -997,19 +998,19 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 							//每个网格的大小为1024
 							//double dGap = 1024.00;
 
-							//计算 x point 补偿量,以左下角顶点为基准，减去相对应值，得到四个顶点值
-							double xInterpolation = Calculate_X_Direction(m_Cor_Point[iX - 1][iY].fx, m_Cor_Point[iX][iY].fx,
-								m_Cor_Point[iX - 1][iY].fx, m_Cor_Point[iX][iY - 1].fx, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, pStart.x(), pStart.y());
+                            //计算 x point 补偿量,以左下角顶点为基准，减去相对应值，得到四个顶点值
+                            double xInterpolation = Calculate_X_Direction(m_Cor_Point[iX - 1][iY].fx, m_Cor_Point[iX][iY].fx, m_Cor_Point[iX - 1][iY - 1].fx, m_Cor_Point[iX][iY - 1].fx, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, pStart.x(), pStart.y());
 
-							//计算 y point 补偿量
-							double yInterpolation = Calculate_Y_Direction(m_Cor_Point[iX - 1][iY].fy, m_Cor_Point[iX][iY].fy, m_Cor_Point[iX - 1][iY - 1].fy, m_Cor_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, pStart.x(), pStart.y());
-							double x, y;
-							x = pStart.x() / ratio + xInterpolation;
-							y = pStart.y() / ratio + yInterpolation;
-							
-							pStart.setX(x);
-							pStart.setY(y);
-							return pStart;
+                            //计算 y point 补偿量
+                            double yInterpolation = Calculate_Y_Direction(m_Cor_Point[iX - 1][iY].fy, m_Cor_Point[iX][iY].fy, m_Cor_Point[iX - 1][iY - 1].fy, m_Cor_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, pStart.x(), pStart.y());
+
+                            double x, y;
+                            x = pStart.x() / ratio + xInterpolation;
+                            y = pStart.y() / ratio + yInterpolation;
+
+                            pStart.setX(x);
+                            pStart.setY(y);
+                            return pStart;
 						}
 					}
 				}
@@ -1025,14 +1026,14 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 	else if (pStart.x() < 0 && pStart.y() < 0)
 	{
 		//缩小X轴搜索范围, x < 0 && x > -(32768 / 4)
-		if (pStart.x() < 0 && pStart.x() > m_Cor_Point[MAX_GRID_SIZE / 4 + MAX_GRID_SIZE / 8][0].fx)
+        if (pStart.x() < 0 && pStart.x() > m_Cor_Point[MAX_GRID_SIZE / 4 + MAX_GRID_SIZE / 8 ][0].fx)
 		{
-			for (int iX = (MAX_GRID_SIZE / 4 + MAX_GRID_SIZE / 8) + 1; iX < MAX_GRID_SIZE / 2 + 1; iX++)
+            for (int iX =  20; iX < MAX_GRID_SIZE / 2 ; iX++)
 			{
 				//缩小Y轴搜索范围,y < 0 && y > -(32768 / 2)
 				if (pStart.y() < 0 && pStart.y() > m_Cor_Point[iX][MAX_GRID_SIZE / 4].fy)
 				{
-					for (int iY = MAX_GRID_SIZE / 4 + 1; iY < MAX_GRID_SIZE / 2; iY++)
+                    for (int iY = 16 + 1; iY < MAX_GRID_SIZE / 2; iY++)
 					{
 						if (pStart.x() > m_Cor_Point[iX - 1][iY].fx && pStart.y() < m_Cor_Point[iX][iY].fy
 							&& pStart.x() < m_Cor_Point[iX][iY].fx  && pStart.y() > m_Cor_Point[iX][iY - 1].fy)
@@ -1059,7 +1060,7 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 				//缩小Y轴搜索范围,y < -(32768 / 2) && y > -32768
 				else if (pStart.y() < m_Cor_Point[iX][MAX_GRID_SIZE / 4].fy && pStart.y() > m_Cor_Point[iX][0].fy)
 				{
-					for (int iY = 1; iY < MAX_GRID_SIZE / 4; iY++)
+                    for (int iY = 1; iY < MAX_GRID_SIZE / 2; iY++)
 					{
 						if (pStart.x() > m_Cor_Point[iX - 1][iY].fx && pStart.y() < m_Cor_Point[iX][iY].fy
 							&& pStart.x() < m_Cor_Point[iX][iY].fx  && pStart.y() > m_Cor_Point[iX][iY - 1].fy)
@@ -1087,14 +1088,14 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 		}
 
 		//x < -(32768 / 4) && x > - (32768 / 2)
-		else if (pStart.x() < m_Cor_Point[MAX_GRID_SIZE / 4 + MAX_GRID_SIZE / 8]->fx && pStart.x() > m_Cor_Point[MAX_GRID_SIZE / 4]->fx)
+        else if (pStart.x() < m_Cor_Point[MAX_GRID_SIZE / 4 + MAX_GRID_SIZE / 8]->fx && pStart.x() > m_Cor_Point[MAX_GRID_SIZE / 4 ]->fx)
 		{
-			for (int iX = MAX_GRID_SIZE / 4 + 1; iX < MAX_GRID_SIZE / 2; iX++)
+            for (int iX =  12; iX < MAX_GRID_SIZE / 2; iX++)
 			{
 				//缩小Y轴搜索范围,y < 0 && y > -(32768 / 2)
 				if (pStart.y() < 0 && pStart.y() > m_Cor_Point[iX][MAX_GRID_SIZE / 4].fy)
 				{
-					for (int iY = MAX_GRID_SIZE / 4 + 1; iY < MAX_GRID_SIZE / 2; iY++)
+                    for (int iY = 16 + 1; iY < MAX_GRID_SIZE / 2; iY++)
 					{
 						if (pStart.x() > m_Cor_Point[iX - 1][iY].fx && pStart.y() < m_Cor_Point[iX][iY].fy
 							&& pStart.x() < m_Cor_Point[iX][iY].fx  && pStart.y() > m_Cor_Point[iX][iY - 1].fy)
@@ -1109,15 +1110,8 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 							double yInterpolation = Calculate_Y_Direction(m_Cor_Point[iX - 1][iY].fy, m_Cor_Point[iX][iY].fy, m_Cor_Point[iX - 1][iY - 1].fy, m_Cor_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, pStart.x(), pStart.y());
 
 							double x, y;
-							if (xInterpolation < 0)
-								x = pStart.x() / ratio + xInterpolation;
-							else
-								x = pStart.x() / ratio - xInterpolation;
-
-							if (yInterpolation < 0)
-								y = pStart.y() / ratio - yInterpolation;
-							else
-								y = pStart.y() / ratio + yInterpolation;
+                            x = pStart.x() / ratio + xInterpolation;
+                            y = pStart.y() / ratio + yInterpolation;
 
 							pStart.setX(x);
 							pStart.setY(y);
@@ -1128,7 +1122,7 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 				//缩小Y轴搜索范围,y < -(32768 / 2) && y > -32768
 				else if (pStart.y() < m_Cor_Point[iX][MAX_GRID_SIZE / 4].fy && pStart.y() > m_Cor_Point[iX][0].fy)
 				{
-					for (int iY = 1; iY < MAX_GRID_SIZE / 4; iY++)
+                    for (int iY = 1; iY < MAX_GRID_SIZE / 2; iY++)
 					{
 						if (pStart.x() > m_Cor_Point[iX - 1][iY].fx && pStart.y() < m_Cor_Point[iX][iY].fy
 							&& pStart.x() < m_Cor_Point[iX][iY].fx  && pStart.y() > m_Cor_Point[iX][iY - 1].fy)
@@ -1143,15 +1137,8 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 							double yInterpolation = Calculate_Y_Direction(m_Cor_Point[iX - 1][iY].fy, m_Cor_Point[iX][iY].fy, m_Cor_Point[iX - 1][iY - 1].fy, m_Cor_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, pStart.x(), pStart.y());
 
 							double x, y;
-							if (xInterpolation < 0)
-								x = pStart.x() / ratio + xInterpolation;
-							else
-								x = pStart.x() / ratio - xInterpolation;
-
-							if (yInterpolation < 0)
-								y = pStart.y() / ratio - yInterpolation;
-							else
-								y = pStart.y() / ratio + yInterpolation;
+                            x = pStart.x() / ratio + xInterpolation;
+                            y = pStart.y() / ratio + yInterpolation;
 
 							pStart.setX(x);
 							pStart.setY(y);
@@ -1163,14 +1150,14 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 		}
 
 		//x < -(32768 / 2) && x > - (32768 - 32768 / 4)
-		else if (pStart.x() < m_Cor_Point[MAX_GRID_SIZE / 4]->fx && pStart.x() > m_Cor_Point[ MAX_GRID_SIZE / 8]->fx)
+        else if (pStart.x() < m_Cor_Point[MAX_GRID_SIZE / 4]->fx && pStart.x() > m_Cor_Point[ MAX_GRID_SIZE / 8]->fx)
 		{
-			for (int iX = MAX_GRID_SIZE / 8 + 1; iX < MAX_GRID_SIZE / 2; iX++)
+			for (int iX = MAX_GRID_SIZE / 16 + 1; iX < MAX_GRID_SIZE / 2; iX++)
 			{
 				//缩小Y轴搜索范围,y < 0 && y > -(32768 / 2)
 				if (pStart.y() < 0 && pStart.y() > m_Cor_Point[iX][MAX_GRID_SIZE / 4].fy)
 				{
-					for (int iY = MAX_GRID_SIZE / 4 + 1; iY < MAX_GRID_SIZE / 2; iY++)
+                    for (int iY = 16+ 1; iY < MAX_GRID_SIZE / 2; iY++)
 					{
 						if (pStart.x() > m_Cor_Point[iX - 1][iY].fx && pStart.y() < m_Cor_Point[iX][iY].fy
 							&& pStart.x() < m_Cor_Point[iX][iY].fx  && pStart.y() > m_Cor_Point[iX][iY - 1].fy)
@@ -1195,7 +1182,7 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 					}
 				}
 				//缩小Y轴搜索范围,y < -(32768/2) && y > -32768
-				else if (pStart.y() < m_Cor_Point[iX][MAX_GRID_SIZE / 4].fy && pStart.y() > m_Cor_Point[iX][0].fy)
+                else if (pStart.y() < m_Cor_Point[iX][MAX_GRID_SIZE / 4].fy && pStart.y() > m_Cor_Point[iX][0].fy)
 				{
 					for (int iY = 1; iY < MAX_GRID_SIZE / 2; iY++)
 					{
@@ -1224,14 +1211,14 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 			}
 		}
 
-		else if (pStart.x() < m_Cor_Point[MAX_GRID_SIZE / 8]->fx && pStart.x() > m_Cor_Point[0]->fx)
+        else if (pStart.x() < m_Cor_Point[MAX_GRID_SIZE / 8]->fx && pStart.x() > m_Cor_Point[0]->fx)
 		{
-			for (int iX = 1; iX < MAX_GRID_SIZE; iX++)
+			for (int iX = 1; iX < MAX_GRID_SIZE / 2; iX++)
 			{
 				//缩小Y轴搜索范围,y < 0 && y > -(32768 / 2)
-				if (pStart.y() < 0 && pStart.y() > m_Cor_Point[iX][MAX_GRID_SIZE / 4].fy)
+                if (pStart.y() < 0 && pStart.y() > m_Cor_Point[iX][MAX_GRID_SIZE / 4].fy)
 				{
-					for (int iY = MAX_GRID_SIZE / 4 + 1; iY < MAX_GRID_SIZE / 2; iY++)
+                    for (int iY = 16 + 1; iY < MAX_GRID_SIZE / 2; iY++)
 					{
 						if (pStart.x() > m_Cor_Point[iX - 1][iY].fx && pStart.y() < m_Cor_Point[iX][iY].fy
 							&& pStart.x() < m_Cor_Point[iX][iY].fx  && pStart.y() > m_Cor_Point[iX][iY - 1].fy)
@@ -1258,7 +1245,7 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 				//缩小Y轴搜索范围,y < -(32768/2) && y > -32768
 				else if (pStart.y() < m_Cor_Point[iX][MAX_GRID_SIZE / 4].fy && pStart.y() > m_Cor_Point[iX][0].fy)
 				{
-					for (int iY = 1; iY < MAX_GRID_SIZE / 4 + 1; iY++)
+                    for (int iY = 1; iY < MAX_GRID_SIZE / 2 ; iY++)
 					{
 						if (pStart.x() > m_Cor_Point[iX - 1][iY].fx && pStart.y() < m_Cor_Point[iX][iY].fy
 							&& pStart.x() < m_Cor_Point[iX][iY].fx  && pStart.y() > m_Cor_Point[iX][iY - 1].fy)
@@ -1302,6 +1289,37 @@ QPointF& SLLensCorrection::linearInterpolation(double x, double y, double ratio)
 
 }
 
+
+QPointF& SLLensCorrection::linearInterpolation(QPointF p, double ratio)
+{
+	double x = p.x() * ratio;
+	double y = p.y() * ratio;
+
+	pStart.setX(x);
+	pStart.setY(y);
+
+	int iX = 0, iY = 0;
+	binarySearch(pStart,iX,iY);
+	
+
+	if (iX > (MAX_GRID_SIZE - 1))   //确保 iX and iY 不大于 64
+		iX = MAX_GRID_SIZE - 1;
+	if (iY > (MAX_GRID_SIZE - 1))
+		iY = MAX_GRID_SIZE - 1;
+
+	//计算 x point 补偿量,以左下角顶点为基准，减去相对应值，得到四个顶点值
+	double xInterpolation = Calculate_X_Direction(m_Cor_Point[iX - 1][iY].fx, m_Cor_Point[iX][iY].fx, m_Cor_Point[iX - 1][iY - 1].fx, m_Cor_Point[iX][iY - 1].fx, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, pStart.x(), pStart.y());
+
+	//计算 y point 补偿量
+	double yInterpolation = Calculate_Y_Direction(m_Cor_Point[iX - 1][iY].fy, m_Cor_Point[iX][iY].fy, m_Cor_Point[iX - 1][iY - 1].fy, m_Cor_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fy, srcPoint.m_Src_Point[iX][iY - 1].fy, srcPoint.m_Src_Point[iX - 1][iY].fx, srcPoint.m_Src_Point[iX][iY - 1].fx, pStart.x(), pStart.y());
+
+	x = pStart.x() / ratio + xInterpolation;
+	y = pStart.y() / ratio + yInterpolation;
+
+	pStart.setX(x);
+	pStart.setY(y);
+	return pStart;
+}
 
 double SLLensCorrection::Calculate_X_Direction(double dx1, double dx2, double dx3, double dx4, double x1, double x2, double y1, double y2, double x, double y)
 {
@@ -1374,4 +1392,54 @@ void SLSourcePoint::initSrcPoint()
 
 		fy = -32768;
 	}
+}
+
+
+void  SLLensCorrection::binarySearch(const QPointF &p,int &x,int &y)
+{
+	int length = MAX_GRID_SIZE - 1;   //length = 64
+	int iX = 0, iY = 0;
+
+	int pos_x = 1 , pos_y = 1;
+	while (iX <= length)   //查找X所在索引
+	{
+		int mid = iX + ((length - iX) >> 1);
+		if (m_Cor_Point[mid]->fx > p.x())
+		{
+			length = mid - 1;
+		}
+		else if (m_Cor_Point[mid]->fx < p.x())
+		{
+			iX = mid + 1;
+		}			
+
+		if (p.x() > m_Cor_Point[mid - 1]->fx && p.x() <= m_Cor_Point[mid]->fx)
+		{
+			pos_x = mid;
+			break;
+		}
+	}
+
+	length = MAX_GRID_SIZE - 1;
+	while (iY <= length)   //查找Y所在索引
+	{
+		int mid = iY + ((length - iY) >> 1);
+		if (m_Cor_Point[pos_x][mid].fy > p.y())
+		{
+			length = mid - 1;
+		}
+		else if (m_Cor_Point[pos_x][mid].fy < p.y())
+		{
+			iY = mid + 1;
+		}		
+
+		if (p.y() <= m_Cor_Point[pos_x][mid].fy && p.y() > m_Cor_Point[pos_x][mid - 1].fy)
+		{
+			pos_y = mid;
+			break;
+		}
+	}
+
+	x = pos_x;
+	y = pos_y;
 }
